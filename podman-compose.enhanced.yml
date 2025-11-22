@@ -1,0 +1,268 @@
+version: '3.8'
+
+# NUJ Social Media Ethics Monitor - Enhanced Stack
+# With Virtuoso, Dragonfly, XTDB, GraphQL, Julia, Ada TUI
+
+networks:
+  nuj-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  virtuoso-data:
+    driver: local
+  dragonfly-data:
+    driver: local
+  xtdb-data:
+    driver: local
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  loki-data:
+    driver: local
+
+services:
+  # ====================
+  # ENHANCED DATA LAYER
+  # ====================
+
+  virtuoso:
+    image: openlink/virtuoso-opensource-7:latest
+    container_name: nuj-virtuoso
+    restart: unless-stopped
+    environment:
+      DBA_PASSWORD: ${VIRTUOSO_PASSWORD:-dba}
+      SPARQL_UPDATE: "true"
+      DEFAULT_GRAPH: "http://nuj.org.uk/monitor/default-graph"
+    ports:
+      - "${VIRTUOSO_PORT:-1111}:1111"  # SQL
+      - "${VIRTUOSO_HTTP_PORT:-8890}:8890"  # HTTP/SPARQL
+    volumes:
+      - virtuoso-data:/opt/virtuoso-opensource/database
+      - ./infrastructure/database/virtuoso/virtuoso.ini:/opt/virtuoso-opensource/database/virtuoso.ini:ro
+      - ./infrastructure/database/virtuoso/init-virtuoso.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.60
+    healthcheck:
+      test: ["CMD-SHELL", "isql 1111 dba dba EXEC='SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: nuj-dragonfly
+    restart: unless-stopped
+    command:
+      - --logtostderr
+      - --requirepass=${DRAGONFLY_PASSWORD:-changeme}
+      - --maxmemory=2gb
+      - --cache_mode=true
+      - --keys_output_limit=12288
+      - --dbnum=16
+    ports:
+      - "${DRAGONFLY_PORT:-6379}:6379"
+    volumes:
+      - dragonfly-data:/data
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.61
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  xtdb:
+    image: juxt/xtdb-standalone-rocksdb:latest
+    container_name: nuj-xtdb
+    restart: unless-stopped
+    environment:
+      XTDB_ENABLE_BYTEUTILS_SHA1: "true"
+      JAVA_OPTS: "-Xmx2g -Xms1g"
+    ports:
+      - "${XTDB_PORT:-3000}:3000"
+    volumes:
+      - xtdb-data:/var/lib/xtdb
+      - ./services/xtdb-temporal:/app:ro
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.62
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/_xtdb/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  # ====================
+  # ENHANCED SERVICES
+  # ====================
+
+  graphql-gateway:
+    build:
+      context: ./services/graphql-gateway
+      dockerfile: Dockerfile
+    container_name: nuj-graphql-gateway
+    restart: unless-stopped
+    environment:
+      COLLECTOR_URL: http://collector:3001
+      ANALYZER_URL: http://analyzer:3002
+      PUBLISHER_URL: http://publisher:3003
+      DASHBOARD_URL: http://dashboard:4000
+      VIRTUOSO_URL: http://virtuoso:8890/sparql
+      PORT: 8000
+    ports:
+      - "${GRAPHQL_PORT:-8000}:8000"
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.70
+    depends_on:
+      - virtuoso
+      - dragonfly
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  julia-scraper:
+    build:
+      context: ./services/scraper-julia
+      dockerfile: Dockerfile
+    container_name: nuj-julia-scraper
+    restart: unless-stopped
+    environment:
+      JULIA_NUM_THREADS: auto
+      VIRTUOSO_URL: http://virtuoso:8890/sparql
+      DRAGONFLY_URL: redis://dragonfly:6379
+      MAX_CONCURRENT: 1000
+      RATE_LIMIT_PER_SECOND: 100
+    volumes:
+      - ./services/scraper-julia:/app:ro
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.71
+    depends_on:
+      - virtuoso
+      - dragonfly
+    deploy:
+      resources:
+        limits:
+          cpus: '8.0'  # Use all cores for massive parallelism
+          memory: 4G
+        reservations:
+          cpus: '4.0'
+          memory: 2G
+
+  ada-tui:
+    build:
+      context: ./services/tui-ada
+      dockerfile: Dockerfile
+    container_name: nuj-ada-tui
+    restart: "no"  # Run on-demand
+    stdin_open: true
+    tty: true
+    environment:
+      VIRTUOSO_URL: virtuoso://virtuoso:1111
+      DRAGONFLY_URL: dragonfly://dragonfly:6379
+      XTDB_URL: http://xtdb:3000
+      GRAPHQL_URL: http://graphql-gateway:8000/graphql
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.72
+    profiles:
+      - tools
+
+  # ====================
+  # MONITORING (Enhanced)
+  # ====================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nuj-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.80
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nuj-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,yesoreyeram-infinity-datasource
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      nuj-network:
+        ipv4_address: 172.20.0.81
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+# ====================
+# PROFILES
+# ====================
+# Use profiles to selectively start services:
+#   - production: All services except dev tools
+#   - development: All services including dev tools
+#   - tools: Just TUI and admin tools
+#   - minimal: Core services only
