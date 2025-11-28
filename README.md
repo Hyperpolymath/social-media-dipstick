@@ -1,4 +1,4 @@
-# NUJ Social Media Ethics Monitor
+# Social Media Ethics Monitor
 
 > Automated system to monitor social media platform policies and deliver 6-monthly guidance to NUJ members
 
@@ -288,7 +288,7 @@ GPL-3.0 (for union movement benefit)
 
 ## 🙏 Acknowledgments
 
-Built to deliver NUJ Democratic Motion on social media platform monitoring.
+Built to deliver on a democratic motion on social media platform monitoring.
 
 ---
 
