@@ -1,41 +1,41 @@
-# Social Media Ethics Monitor
+= Social Media Ethics Monitor
 
 > Automated system to monitor social media platform policies and deliver 6-monthly guidance to NUJ members
 
 [![CI](https://github.com/Hyperpolymath/social-media-dipstick/actions/workflows/ci.yml/badge.svg)](https://github.com/Hyperpolymath/social-media-dipstick/actions/workflows/ci.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-## 🎯 Project Overview
+== 🎯 Project Overview
 
 Replaces manual monitoring (£18k/year) with automated solution (£400/year) while generating potential £30k/year revenue.
 
-### Business Case
-- **Cost Savings**: £18k/year → £400/year
-- **Revenue Potential**: £30k/year (training, licensing, API access)
-- **Net Benefit**: £47.6k/year
-- **Time Savings**: Manual hours → <10 min/day human oversight
+=== Business Case
+- *Cost Savings*: £18k/year → £400/year
+- *Revenue Potential*: £30k/year (training, licensing, API access)
+- *Net Benefit*: £47.6k/year
+- *Time Savings*: Manual hours → <10 min/day human oversight
 
-## 🏗️ Architecture
+== 🏗️ Architecture
 
 Microservices architecture on Podman:
 
-- **Collector** (Rust): Platform scraping, API monitoring, change detection
-- **Analyzer** (Python): NLP, impact assessment, guidance generation
-- **Dashboard** (Elixir/Phoenix): Real-time monitoring, approval workflows
-- **Publisher** (Node.js): Email delivery, rollback, analytics
+- *Collector* (Rust): Platform scraping, API monitoring, change detection
+- *Analyzer* (Python): NLP, impact assessment, guidance generation
+- *Dashboard* (Elixir/Phoenix): Real-time monitoring, approval workflows
+- *Publisher* (Node.js): Email delivery, rollback, analytics
 
-### Data Layer
+=== Data Layer
 - PostgreSQL 15+ with TimescaleDB for time-series data
 - Redis for caching and job queues
 
-### Infrastructure
+=== Infrastructure
 - Podman for container orchestration (Windows Enterprise compatible)
 - GitHub Actions for CI/CD
 - Prometheus + Grafana for monitoring
 
-## 🚀 Quick Start
+== 🚀 Quick Start
 
-### Prerequisites
+=== Prerequisites
 ```bash
 - Podman 4.0+
 - PostgreSQL 15+
@@ -45,31 +45,31 @@ Microservices architecture on Podman:
 - Node.js 20+
 ```
 
-### Installation
+=== Installation
 
 ```bash
-# Clone repository
+= Clone repository
 git clone https://github.com/Hyperpolymath/social-media-dipstick.git
 cd social-media-dipstick
 
-# Setup development environment
+= Setup development environment
 ./tools/scripts/setup-dev.sh
 
-# Copy and configure environment
+= Copy and configure environment
 cp .env.example .env
-# Edit .env with your credentials
+= Edit .env with your credentials
 
-# Start all services
+= Start all services
 podman-compose up -d
 
-# Run migrations
+= Run migrations
 ./tools/cli/migrate.sh up
 
-# Access dashboard
+= Access dashboard
 open http://localhost:4000
 ```
 
-## 📊 Services
+== 📊 Services
 
 | Service | Port | Purpose |
 |---------|------|---------|
@@ -80,99 +80,99 @@ open http://localhost:4000
 | Prometheus | 9090 | Metrics |
 | Grafana | 3000 | Dashboards |
 
-## 🛡️ Safety Guardrails (19 Layers)
+== 🛡️ Safety Guardrails (19 Layers)
 
-### Never Auto-Publish Without Approval
+=== Never Auto-Publish Without Approval
 1. Human approval required
 2. 5-minute grace period
 3. Test group send-first
 4. Auto-rollback on failures
 5. Emergency stop button
 
-### Monitoring & Alerting (6-10)
+=== Monitoring & Alerting (6-10)
 6. Platform change notifications
 7. Service health monitoring
 8. False positive detection
 9. Delivery tracking
 10. Anomaly detection
 
-### Data Protection (11-15)
+=== Data Protection (11-15)
 11. Member data encryption
 12. Role-based access control
 13. Complete audit logging
 14. GDPR compliance
 15. Data retention policies
 
-### Operational Safety (16-19)
+=== Operational Safety (16-19)
 16. Rate limiting
 17. Graceful degradation
 18. Backup systems
 19. Disaster recovery
 
-## 🔧 Development
+== 🔧 Development
 
-### Setup Development Environment
+=== Setup Development Environment
 ```bash
 ./tools/scripts/setup-dev.sh
 ```
 
-### Start Development Servers
+=== Start Development Servers
 ```bash
 ./tools/scripts/dev-start.sh
 ```
 
-### Run Tests
+=== Run Tests
 ```bash
 ./tools/scripts/test-all.sh
 ```
 
-### View Logs
+=== View Logs
 ```bash
 ./tools/scripts/dev-logs.sh [service]
 ```
 
-## 📦 Deployment
+== 📦 Deployment
 
-### Staging
+=== Staging
 ```bash
 gh workflow run deploy.yml -f environment=staging
 ```
 
-### Production
+=== Production
 ```bash
 gh workflow run deploy.yml -f environment=production
 ```
 
-## 🛠️ CLI Tools
+== 🛠️ CLI Tools
 
-### Database Management
+=== Database Management
 ```bash
-# Run migrations
+= Run migrations
 ./tools/cli/migrate.sh up
 
-# Create new migration
+= Create new migration
 ./tools/cli/migrate.sh create add_field_name
 
-# Check migration status
+= Check migration status
 ./tools/cli/migrate.sh status
 ```
 
-### Backup & Restore
+=== Backup & Restore
 ```bash
-# Create backup
+= Create backup
 ./tools/cli/backup.sh
 
-# Restore from backup
+= Restore from backup
 ./tools/cli/restore.sh backups/nuj_monitor_20250101_120000.sql.gz
 ```
 
-### Publication Management
+=== Publication Management
 ```bash
-# Rollback publication (within grace period)
+= Rollback publication (within grace period)
 ./tools/cli/rollback.sh <publication-id> "Reason for rollback"
 ```
 
-## 📖 Documentation
+== 📖 Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Project context and requirements
 - [Collector Service](services/collector/README.md) - Platform monitoring
@@ -181,115 +181,115 @@ gh workflow run deploy.yml -f environment=production
 - [Dashboard Service](services/dashboard/) - Web UI
 - [Database Schema](infrastructure/database/README.md) - Data model
 
-## 🔍 Monitoring
+== 🔍 Monitoring
 
-### Prometheus Metrics
+=== Prometheus Metrics
 - Collection success/failure rates
 - Analysis processing times
 - Email delivery statistics
 - System health metrics
 
-### Grafana Dashboards
+=== Grafana Dashboards
 - Platform monitoring status
 - Change detection trends
 - Publication metrics
 - Service health overview
 
-### Loki Logs
+=== Loki Logs
 - Structured JSON logs from all services
 - Centralized log aggregation
 - 90-day retention
 
-## 🧪 Testing
+== 🧪 Testing
 
 ```bash
-# All services
+= All services
 ./tools/scripts/test-all.sh
 
-# Individual services
+= Individual services
 cd services/collector && cargo test
 cd services/analyzer && pytest
 cd services/publisher && npm test
 cd services/dashboard && mix test
 ```
 
-## 🤝 Contributing
+== 🤝 Contributing
 
 1. Follow existing code style
 2. Write tests for new features
 3. Update documentation
 4. Submit pull requests for review
 
-### Code Style
-- **Rust**: `cargo fmt`, `cargo clippy`
-- **Python**: Black, isort, mypy
-- **Node.js**: Prettier, ESLint
-- **Elixir**: `mix format`
+=== Code Style
+- *Rust*: `cargo fmt`, `cargo clippy`
+- *Python*: Black, isort, mypy
+- *Node.js*: Prettier, ESLint
+- *Elixir*: `mix format`
 
-## 📋 Development Phases
+== 📋 Development Phases
 
-### ✅ Phase 0: Design Complete
+=== ✅ Phase 0: Design Complete
 - Architecture defined
 - Database schema created
 - Service skeletons built
 - CI/CD pipeline configured
 
-### 🚧 Phase 1: Manual Process (Weeks 1-4)
+=== 🚧 Phase 1: Manual Process (Weeks 1-4)
 - Manual monitoring to demonstrate DM compliance
 - Build process documentation
 - First 6-monthly guidance sent manually
 
-### 📅 Phase 2: Data Collection (Weeks 5-8)
+=== 📅 Phase 2: Data Collection (Weeks 5-8)
 - Automated policy change detection
 - Basic dashboard
-- **Budget**: £0
+- *Budget*: £0
 
-### 📅 Phase 3: Analysis (Weeks 9-12)
+=== 📅 Phase 3: Analysis (Weeks 9-12)
 - NLP integration
 - AI-assisted draft generation
-- **Budget**: £400 (OpenAI API)
+- *Budget*: £400 (OpenAI API)
 
-### 📅 Phase 4: Publishing (Weeks 13-16)
+=== 📅 Phase 4: Publishing (Weeks 13-16)
 - End-to-end automation
 - Safety guardrails live
 
-### 📅 Phase 5: Enhancement (Weeks 17-18)
+=== 📅 Phase 5: Enhancement (Weeks 17-18)
 - Advanced analytics
 - Production optimization
 
-### 📅 Phase 6: Commercialization (Weeks 19-20)
+=== 📅 Phase 6: Commercialization (Weeks 19-20)
 - Revenue generation ready
 - API for external unions
 
-## 💰 Revenue Model
+== 💰 Revenue Model
 
-### Training (£10k/year)
+=== Training (£10k/year)
 - Social media ethics workshops
 - Platform policy webinars
 
-### Union Licensing (£15k/year)
+=== Union Licensing (£15k/year)
 - TUC unions: £5k/year
 - International unions: £10k/year
 
-### API Access (£5k/year)
+=== API Access (£5k/year)
 - Platform change webhooks
 - Historical policy data
 
-**Total**: £30k revenue - £400 costs = £29.6k net
+*Total*: £30k revenue - £400 costs = £29.6k net
 
-## 📞 Support
+== 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/Hyperpolymath/social-media-dipstick/issues)
-- **Emergency**: [Emergency contact TBD]
+- *Issues*: [GitHub Issues](https://github.com/Hyperpolymath/social-media-dipstick/issues)
+- *Emergency*: [Emergency contact TBD]
 
-## 📄 License
+== 📄 License
 
 GPL-3.0 (for union movement benefit)
 
-## 🙏 Acknowledgments
+== 🙏 Acknowledgments
 
 Built to deliver on a democratic motion on social media platform monitoring.
 
 ---
 
-**Key Insight**: This system prevents crises rather than responding to them. Comms team approves (5 min/day), technology does everything else (24/7 monitoring, drafting, sending, reporting).
+*Key Insight*: This system prevents crises rather than responding to them. Comms team approves (5 min/day), technology does everything else (24/7 monitoring, drafting, sending, reporting).
