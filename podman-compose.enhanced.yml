@@ -62,7 +62,7 @@ services:
     environment:
       DBA_PASSWORD: ${VIRTUOSO_PASSWORD:-dba}
       SPARQL_UPDATE: "true"
-      DEFAULT_GRAPH: "http://nuj.org.uk/monitor/pestle"
+      DEFAULT_GRAPH: "https://nuj.org.uk/monitor/pestle"
     ports:
       - "${VIRTUOSO_PORT:-1111}:1111"
       - "${VIRTUOSO_HTTP_PORT:-8890}:8890"
@@ -301,7 +301,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER:-nuj}:${DATABASE_PASSWORD:-changeme}@postgres:5432/${DATABASE_NAME:-nuj_monitor}
-      VIRTUOSO_URL: http://virtuoso:8890/sparql
+      VIRTUOSO_URL: https://virtuoso:8890/sparql
       DRAGONFLY_URL: redis://:${DRAGONFLY_PASSWORD:-changeme}@dragonfly:6379
       DENO_ENV: production
     ports:
@@ -335,9 +335,9 @@ services:
     restart: unless-stopped
     environment:
       COLLECTOR_URL: http://collector:3001
-      ANALYZER_URL: http://analyzer-rescript:3002
-      PUBLISHER_URL: http://publisher-deno:3003
-      AGENT_SWARM_URL: http://agent-swarm:3004
+      ANALYZER_URL: https://analyzer-rescript:3002
+      PUBLISHER_URL: https://publisher-deno:3003
+      AGENT_SWARM_URL: https://agent-swarm:3004
       PESTLE_OBSERVATORY_URL: http://pestle-observatory:3005
       DENO_ENV: production
     ports:
@@ -401,7 +401,7 @@ services:
     container_name: nuj-xtdb-temporal
     restart: unless-stopped
     environment:
-      XTDB_URL: http://xtdb:3000
+      XTDB_URL: https://xtdb:3000
     ports:
       - "${XTDB_TEMPORAL_PORT:-3007}:3007"
     depends_on:

@@ -11,10 +11,10 @@ from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, RDFS, XSD, OWL
 
 # NUJ Monitor ontology namespace
-NUJ = Namespace("http://nuj.org.uk/monitor/ontology/")
-PLATFORM = Namespace("http://nuj.org.uk/monitor/platform/")
-POLICY = Namespace("http://nuj.org.uk/monitor/policy/")
-CHANGE = Namespace("http://nuj.org.uk/monitor/change/")
+NUJ = Namespace("https://nuj.org.uk/monitor/ontology/")
+PLATFORM = Namespace("https://nuj.org.uk/monitor/platform/")
+POLICY = Namespace("https://nuj.org.uk/monitor/policy/")
+CHANGE = Namespace("https://nuj.org.uk/monitor/change/")
 
 @dataclass
 class VirtuosoConfig:
@@ -23,14 +23,14 @@ class VirtuosoConfig:
     http_port: int = 8890
     username: str = "dba"
     password: str = "dba"
-    default_graph: str = "http://nuj.org.uk/monitor/default-graph"
+    default_graph: str = "https://nuj.org.uk/monitor/default-graph"
 
 class VirtuosoAdapter:
     """Adapter for Virtuoso RDF triple store"""
 
     def __init__(self, config: VirtuosoConfig):
         self.config = config
-        self.sparql_endpoint = f"http://{config.host}:{config.http_port}/sparql"
+        self.sparql_endpoint = f"https://{config.host}:{config.http_port}/sparql"
         self.client = httpx.AsyncClient()
 
     async def execute_sparql(self, query: str, **kwargs) -> Dict[str, Any]:
@@ -65,7 +65,7 @@ class VirtuosoAdapter:
         PREFIX rdfs: <{RDFS}>
 
         INSERT DATA {{
-          GRAPH <http://nuj.org.uk/monitor/platforms> {{
+          GRAPH <https://nuj.org.uk/monitor/platforms> {{
             {platform_uri.n3()} a nuj:Platform ;
               rdfs:label "{display_name}" ;
               nuj:name "{name}" ;
@@ -102,7 +102,7 @@ class VirtuosoAdapter:
         PREFIX platform: <{PLATFORM}>
 
         INSERT DATA {{
-          GRAPH <http://nuj.org.uk/monitor/changes> {{
+          GRAPH <https://nuj.org.uk/monitor/changes> {{
             {change_uri.n3()} a nuj:PolicyChange ;
               nuj:affectsPlatform {platform_uri.n3()} ;
               nuj:affectsPolicy {policy_uri.n3()} ;
@@ -134,7 +134,7 @@ class VirtuosoAdapter:
 
         SELECT ?change ?platform ?platformLabel ?severity ?confidence ?summary ?detectedAt
         WHERE {{
-          GRAPH <http://nuj.org.uk/monitor/changes> {{
+          GRAPH <https://nuj.org.uk/monitor/changes> {{
             ?change a nuj:PolicyChange ;
               nuj:affectsPlatform ?platform ;
               nuj:severity ?severity ;
@@ -170,7 +170,7 @@ class VirtuosoAdapter:
         WHERE {{
           {{
             SELECT ?change ?confidence WHERE {{
-              GRAPH <http://nuj.org.uk/monitor/changes> {{
+              GRAPH <https://nuj.org.uk/monitor/changes> {{
                 ?change a nuj:PolicyChange ;
                   nuj:affectsPlatform {platform_uri.n3()} ;
                   nuj:confidenceScore ?confidence .
@@ -200,7 +200,7 @@ class VirtuosoAdapter:
 
         SELECT ?change ?platform ?severity ?summary ?detectedAt
         WHERE {{
-          GRAPH <http://nuj.org.uk/monitor/changes> {{
+          GRAPH <https://nuj.org.uk/monitor/changes> {{
             ?change a nuj:PolicyChange ;
               nuj:affectsPlatform ?platform ;
               nuj:severity ?severity ;
